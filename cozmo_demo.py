@@ -30,6 +30,10 @@ from cozmo.behavior import BehaviorTypes
 isLeft = [ False ]# these variables are set unset when the objects appear /dissapear
 isRight = [ False ]
 
+isHex5 = [ False ]
+isHex4 = [ False ]
+isDiamond2 = [ False ]
+
 #will set the default position cozmo's head upon start
 def default_position_upon_start(robot: cozmo.robot.Robot):
     robot.set_head_angle(degrees(0)).wait_for_completed()
@@ -41,13 +45,13 @@ def handle_object_appeared(evt, **kw):
     if isinstance(evt.obj, CustomObject):
         #if the object is a diamond 2
         if(evt.obj.object_type == CustomObjectTypes.CustomType00):
-            isRight[0] = True
+            isDiamond2[0] = True
         #if the object is hexagon 5
         elif(evt.obj.object_type == CustomObjectTypes.CustomType01):
-            isLeft[0] = True
+            isHex5[0] = True
         #if the object is hexagon 4
         elif(evt.obj.object_type == CustomObjectTypes.CustomType02):
-            isLeft[0] = True
+            isHex4[0] = True
 
 
 
@@ -56,13 +60,13 @@ def handle_object_disappeared(evt, **kw):
     # whenever an Object goes out of view.
     #if the object is a diamond 2
     if(evt.obj.object_type == CustomObjectTypes.CustomType00):
-        isRight[0] = False
+        isDiamond2[0] = False
     #if the object is hexagon 5
     elif(evt.obj.object_type == CustomObjectTypes.CustomType01):
-        isLeft[0] = False
+        isHex5[0] = False
     #if the object is hexagon 4
     elif(evt.obj.object_type == CustomObjectTypes.CustomType02):
-        isLeft[0] = False
+        isHex4[0] = False
 
 
 def action_on_seeing_object(robot: cozmo.robot.Robot):
@@ -73,31 +77,32 @@ def action_on_seeing_object(robot: cozmo.robot.Robot):
     the diamond 2 QR, and begin those actions upon the trigger'''
 
 
-    if isLeft[0] and CustomObjectTypes.CustomType00:
+    if isHex5[0]:
         robot.drive_straight(distance_inches(20.5), speed_mmps(70)).wait_for_completed()
         robot.say_text("What the????").wait_for_completed()
         robot.drive_straight(distance_inches(-3), speed_mmps(70)).wait_for_completed()
         robot.drive_straight(distance_inches(3), speed_mmps(35)).wait_for_completed()
-        robot.say_text("Careful Cozmo....").wait_for_completed()
+        robot.drive_straight(distance_inches(1), speed_mmps(85)).wait_for_completed()
+        robot.say_text("You gotta be kidding me!").wait_for_completed()
         robot.turn_in_place(degrees(90)).wait_for_completed()
 
     '''Once cozmo notices the diamond 2 image, it will begin the actions stated below.  It will eventually do a full
     180 degree turn, and head towards the hexagon 4 image.  This will trigger cozmo's final set of instructions.'''
 
-    if isRight[0] and CustomObjectTypes.CustomType00:
-        robot.drive_straight(distance_inches(12), speed_mmps(70)).wait_for_completed()
+    if isDiamond2[0]:
+        robot.drive_straight(distance_inches(10), speed_mmps(70)).wait_for_completed()
         robot.play_anim_trigger(cozmo.anim.Triggers.CubePounceLoseSession, ignore_body_track=True).wait_for_completed()
         robot.say_text("Ugh.").wait_for_completed()
+        robot.say_text("Careful Cozmo....").wait_for_completed()
         robot.drive_straight(distance_inches(2), speed_mmps(90)).wait_for_completed()
-        robot.say_text("You gotta be kidding me!").wait_for_completed()
         robot.drive_straight(distance_inches(-2), speed_mmps(65)).wait_for_completed()
         robot.turn_in_place(degrees(180)).wait_for_completed()
 
     '''Here cozmo will notice the hexagon 4 image, and should find his way out of the "maze".  To signal that cozmo
     has made it out, the event 'CubePounceWinSession is triggered.'''
 
-    if isLeft[0] and CustomObjectTypes.CustomType02:
-        robot.drive_straight(distance_inches(21), speed_mmps(70)).wait_for_completed()
+    if isHex4[0]:
+        robot.drive_straight(distance_inches(22), speed_mmps(70)).wait_for_completed()
         robot.turn_in_place(degrees(-90)).wait_for_completed()
         robot.say_text("How do I get out of here!?").wait_for_completed()
         robot.drive_straight(distance_inches(2), speed_mmps(25)).wait_for_completed()
@@ -105,6 +110,7 @@ def action_on_seeing_object(robot: cozmo.robot.Robot):
         robot.say_text("It's gotta be around here somewhere").wait_for_completed()
         robot.drive_straight(distance_inches(8), speed_mmps(35)).wait_for_completed()
         robot.play_anim_trigger(cozmo.anim.Triggers.CubePounceWinSession, ignore_body_track=True).wait_for_completed()
+
 
 def custom_objects(robot: cozmo.robot.Robot):
     # Add event handlers for whenever Cozmo sees a new object
@@ -129,6 +135,10 @@ def custom_objects(robot: cozmo.robot.Robot):
                                                CustomObjectMarkers.Hexagons4,
                                                150, 120,
                                                50, 30, True)
+    cube_obj4 = robot.world.define_custom_cube(CustomObjectTypes.CustomType03,
+                                              CustomObjectMarkers.Diamonds4,
+                                              57,
+                                              25, 25, True)
 
     if ((wall_obj1 is not None) and (wall_obj2 is not None)) and (wall_obj3 is not None):
         print("All objects defined successfully!")
@@ -140,4 +150,4 @@ def custom_objects(robot: cozmo.robot.Robot):
         #time.sleep(0.1)
         action_on_seeing_object(robot)
 
-cozmo.run_program(custom_objects, use_3d_viewer=False, use_viewer=True)
+cozmo.run_program(custom_objects, use_3d_viewer=True, use_viewer=True)
