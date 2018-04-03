@@ -31,12 +31,13 @@ isLeft = [ False ]# these variables are set unset when the objects appear /dissa
 isRight = [ False ]
 
 isHex5 = [ False ]
-isHex4 = [ False ]
-isDiamond2 = [ False ]
+isTriangle5 = [False]
+isDiamond5 = [False]
+
 
 #will set the default position cozmo's head upon start
 def default_position_upon_start(robot: cozmo.robot.Robot):
-    robot.set_head_angle(degrees(0)).wait_for_completed()
+    robot.set_head_angle(degrees(5)).wait_for_completed()
     robot.set_lift_height(height=0).wait_for_completed()
 
 def handle_object_appeared(evt, **kw):
@@ -45,13 +46,13 @@ def handle_object_appeared(evt, **kw):
     if isinstance(evt.obj, CustomObject):
         #if the object is a diamond 2
         if(evt.obj.object_type == CustomObjectTypes.CustomType00):
-            isDiamond2[0] = True
+            isDiamond5[0] = True
         #if the object is hexagon 5
         elif(evt.obj.object_type == CustomObjectTypes.CustomType01):
             isHex5[0] = True
-        #if the object is hexagon 4
+        #if the object is triangle 5
         elif(evt.obj.object_type == CustomObjectTypes.CustomType02):
-            isHex4[0] = True
+            isTriangle5[0] = True
 
 
 
@@ -60,13 +61,13 @@ def handle_object_disappeared(evt, **kw):
     # whenever an Object goes out of view.
     #if the object is a diamond 2
     if(evt.obj.object_type == CustomObjectTypes.CustomType00):
-        isDiamond2[0] = False
+        isDiamond5[0] = False
     #if the object is hexagon 5
     elif(evt.obj.object_type == CustomObjectTypes.CustomType01):
         isHex5[0] = False
     #if the object is hexagon 4
     elif(evt.obj.object_type == CustomObjectTypes.CustomType02):
-        isHex4[0] = False
+        isTriangle5[0] = False
 
 
 def action_on_seeing_object(robot: cozmo.robot.Robot):
@@ -89,7 +90,7 @@ def action_on_seeing_object(robot: cozmo.robot.Robot):
     '''Once cozmo notices the diamond 2 image, it will begin the actions stated below.  It will eventually do a full
     180 degree turn, and head towards the hexagon 4 image.  This will trigger cozmo's final set of instructions.'''
 
-    if isDiamond2[0]:
+    if isDiamond5[0]:
         robot.drive_straight(distance_inches(10), speed_mmps(70)).wait_for_completed()
         robot.play_anim_trigger(cozmo.anim.Triggers.CubePounceLoseSession, ignore_body_track=True).wait_for_completed()
         robot.say_text("Ugh.").wait_for_completed()
@@ -101,7 +102,7 @@ def action_on_seeing_object(robot: cozmo.robot.Robot):
     '''Here cozmo will notice the hexagon 4 image, and should find his way out of the "maze".  To signal that cozmo
     has made it out, the event 'CubePounceWinSession is triggered.'''
 
-    if isHex4[0]:
+    if isTriangle5[0]:
         robot.drive_straight(distance_inches(22), speed_mmps(70)).wait_for_completed()
         robot.turn_in_place(degrees(-90)).wait_for_completed()
         robot.say_text("How do I get out of here!?").wait_for_completed()
@@ -126,19 +127,19 @@ def custom_objects(robot: cozmo.robot.Robot):
     wall_obj1 = robot.world.define_custom_wall(CustomObjectTypes.CustomType01,
                                               CustomObjectMarkers.Hexagons5,
                                               150, 120,
-                                              50, 30, True)
+                                              50, 50, True)
     wall_obj2 = robot.world.define_custom_wall(CustomObjectTypes.CustomType00,
-                                                CustomObjectMarkers.Diamonds2,
+                                                CustomObjectMarkers.Diamonds5,
                                                 150, 120,
-                                                50, 30, True)
+                                                50, 50, True)
     wall_obj3 = robot.world.define_custom_wall(CustomObjectTypes.CustomType02,
-                                               CustomObjectMarkers.Hexagons4,
+                                               CustomObjectMarkers.Triangles5,
                                                150, 120,
-                                               50, 30, True)
-    cube_obj4 = robot.world.define_custom_cube(CustomObjectTypes.CustomType03,
-                                              CustomObjectMarkers.Diamonds4,
-                                              57,
-                                              25, 25, True)
+                                               50, 50, True)
+    # cube_obj4 = robot.world.define_custom_cube(CustomObjectTypes.CustomType03,
+    #                                           CustomObjectMarkers.Diamonds4,
+    #                                           57,
+    #                                           25, 25, True)
 
     if ((wall_obj1 is not None) and (wall_obj2 is not None)) and (wall_obj3 is not None):
         print("All objects defined successfully!")
@@ -150,4 +151,4 @@ def custom_objects(robot: cozmo.robot.Robot):
         #time.sleep(0.1)
         action_on_seeing_object(robot)
 
-cozmo.run_program(custom_objects, use_3d_viewer=True, use_viewer=True)
+cozmo.run_program(custom_objects, use_3d_viewer=True, use_viewer=True )
